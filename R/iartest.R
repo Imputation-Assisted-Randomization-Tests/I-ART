@@ -1,21 +1,17 @@
-# Install the mice package if not already installed
 if (!requireNamespace("mice", quietly = TRUE)) {
   install.packages("mice")
 }
-
-
-# Load the mice package
 library(mice)
 
-# Install the missForest package if not already installed
 if (!requireNamespace("missForest", quietly = TRUE)) {
   install.packages("missForest")
 }
-
-# Load the missForest package
 library(missForest)
 
+
 T <- function(z, y) {
+  #Calculates the test statistic T Wilcoxon rank-sum test.
+  
   n <- length(z)
   t <- 0
   my_list <- data.frame(z, y)
@@ -29,31 +25,42 @@ T <- function(z, y) {
 }
 
 getY <- function(G, Z, X, Y, covariate_adjustment = FALSE) {
+  #Imputes the missing values in Y using the imputation model G.
+  
   # Combine Z, X, Y into a single data frame
   df_Z <- data.frame(cbind(Z, X, Y))
   
   # Impute the missing values in the combined data frame
   imputed_data <- G(df_Z)
-  completed_data <- complete(imputed_data, 1)
   
   # Extract imputed Y values
   lenY <- ncol(Y)
   indexY <- ncol(Z) + ncol(X) + 1 # Assuming Z and X are not NULL
-  Y_head <- completed_data[, indexY:(indexY + lenY - 1)]
+  Y_head <- imputed_data[, indexY:(indexY + lenY - 1)]
+  X <- imputed_data[, (ncol(Z) + 1):(ncol(Z) + ncol(X))]
   
   if (covariate_adjustment) {
-    # Perform covariate adjustment if required
-    # Fit a model (e.g., linear regression) to predict Y_head based on X
-    # Then adjust Y_head based on this model
-    fit_model <- lm(Y_head ~ X, data = completed_data)
-    Y_head_adjusted <- predict(fit_model, newdata = data.frame(X))
-    Y_head <- Y_head - Y_head_adjusted
+    # Perform linear regression
+    column_names <- names(Y_head)
+
+    # Construct the formula
+    formula_str <- paste("cbind(", paste(column_names, collapse = ", "), ") ~ .")
+    model_formula <- as.formula(formula_str)
+
+    # Fit the model
+    model <- lm(model_formula, data = cbind(Y_head, X))
+
+    # Calculate residuals (Y_head - Y)
+    Y_head_adj <- predict(model,newdata = X)
+    Y_head  = Y_head - Y_head_adj
+
   }
-  
   return(Y_head)
 }
 
 split_data <- function(y, z, M) {
+  #Splits the data into missing and non-missing parts based on the missingness indicator matrix M.
+
   # Convert M to a logical vector to identify missing values
   missing_indices <- as.logical(M)
 
@@ -73,6 +80,8 @@ split_data <- function(y, z, M) {
 
 
 getT <- function(y, z, lenY, M) {
+  #Calculates the test statistic T in missing part and non missing part for each column based on the z,imputed y
+
   t <- numeric(lenY)
   
   for (i in 1:lenY) {
@@ -100,6 +109,8 @@ getT <- function(y, z, lenY, M) {
 }
 
 getZsimTemplates <- function(Z_sorted, S) {
+  #Creates a list of templates for each stratum in S, the template is then used to simulate Z generated from the same distribution as Z.
+
   Z_sim_templates <- list()
   
   unique_strata <- unique(S)
@@ -115,7 +126,6 @@ getZsimTemplates <- function(Z_sorted, S) {
     
     Z_sim_templates[[as.character(stratum)]] <- Z_sim_template
   }
-  
   return(Z_sim_templates)
 }
 
@@ -134,6 +144,7 @@ getZsim <- function(Z_sim_templates) {
 }
 
 check_param <- function(Z, X, Y, S, G, L, verbose, covariate_adjustment, alpha, alternative, random_state) {
+  #Checks the parameters passed to the iartest function.
   
   # Check if Z, X, Y are matrices or data frames
   if (!is.matrix(X) && !is.data.frame(X)) stop("X must be a matrix or data frame")
@@ -174,75 +185,93 @@ check_param <- function(Z, X, Y, S, G, L, verbose, covariate_adjustment, alpha, 
 }
 
 choosemodel <- function(G) {
+  #Chooses the imputation model based on the value of G.
+
   G <- tolower(G) # Convert G to lowercase
   
   if (G == "missforest") {
     # Return missForest imputer function
-    return(function(data) missForest::missForest(data,printFlag = FALSE))
-  } else if (G == "median") {
-    # Return simple imputer for median
-    return(function(data) apply(data, 2, function(col) ifelse(is.na(col), median(col, na.rm = TRUE), col)))
-  } else if (G == "mean") {
-    # Return simple imputer for mean
-    return(function(data) apply(data, 2, function(col) ifelse(is.na(col), mean(col, na.rm = TRUE), col)))
+    return(function(data) missForest::missForest(data)$ximp)
   } else if (G == "mice") {
     # Return MICE imputer function with default method
-    return(function(data) mice::mice(data,printFlag = FALSE))
+    return(function(data) complete(mice::mice(data, printFlag = FALSE), 1))
   } else {
     stop("Unsupported imputation method specified")
   }
 }
 
-iartest <- function(Z, X, Y, G = 'mice', S = NULL, L = 10000, 
+iartest <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000, 
                     verbose = FALSE, covariate_adjustment = FALSE, alpha = 0.05, 
                     alternative = "one-sided", random_state = NULL) {
   
-  # Parameter checks (implement check_param in R)
+  # Parameter checks
   check_param(Z, X, Y, S, G, L, verbose, covariate_adjustment, alpha, alternative, random_state)
+  if (verbose) print("Parameters checked successfully.")
   
   # Set random seed if provided
   if (!is.null(random_state)) {
     set.seed(random_state)
+    if (verbose) print(paste("Random seed set to", random_state))
   }
   
-  # Preprocess the variables (implement preprocess in R)
+  # Preprocess the variables
   M <- is.na(Y)
-
   if (is.null(S)) {
     S <- rep(1, nrow(X))
   }
-
   Z <- matrix(Z, ncol = 1)
   S <- matrix(S, ncol = 1)
-  
+
   # Choose the imputation model
   G_model <- choosemodel(G)
-  
+  if (verbose) print(paste("Imputation model chosen:", G))
+
   # Impute the missing values to get observed test statistics
-  # Implement getY and getT in R
   Y_pred <- getY(G_model, Z, X, Y, covariate_adjustment)
   t_obs <- getT(Y_pred, Z, ncol(Y), M)
-  
+
   # Initialize variable for simulations
   p_values <- numeric(ncol(Y))
   
-  # Perform simulations
+  # Perform Monte Carlo 
+  # Initialize an empty list to store t_sim values
+  t_sim_values <- list()
+
+  if (verbose) print("Starting Monte Carlo loop.")
   for (i in 1:L) {
-    # Simulate treatment indicators (implement getZsimTemplates and getZsim in R)
-    Z_sim <- getZsim(getZsimTemplates(Z, S))
-    Z_sim <- matrix(Z_sim, ncol = 1)
-    
-    # Re-impute and calculate test statistics
-    Y_pred_sim <- getY(G_model, Z_sim, X, Y, covariate_adjustment)
-    t_sim <- getT(Y_pred_sim, Z_sim, ncol(Y), M)
-    
-    # Update p-values (implement the logic for calculating p-values)
-    if (alternative == "one-sided") {
-      p_values <- p_values + (t_sim >= t_obs)
-    } else {
-      p_values <- p_values + (abs(t_sim - mean(t_sim)) >= abs(t_obs - mean(t_sim)))
-    }
+      # Simulate treatment indicators
+      Z_sim <- getZsim(getZsimTemplates(Z, S))
+      Z_sim <- matrix(Z_sim, ncol = 1)
+      
+      # Re-impute and calculate test statistics
+      Y_pred_sim <- getY(G_model, Z_sim, X, Y, covariate_adjustment)
+      t_sim <- getT(Y_pred_sim, Z_sim, ncol(Y), M)
+
+      # Store t_sim values in the list
+      t_sim_values[[i]] <- t_sim
+
+      if (verbose) {
+          print(paste("Iteration:", i, "- Test statistics =", paste(t_sim, collapse = ", ")))
+      }
   }
+
+  # Combine t_sim values into a matrix
+  t_sim_matrix <- do.call(rbind, t_sim_values)
+
+  # Calculate mean of t_sim across all iterations
+  mean_t_sim <- colMeans(t_sim_matrix)
+
+  # Update p-values
+  for (i in 1:nrow(t_sim_matrix)) {
+      t_sim <- t_sim_matrix[i, ]
+      if (alternative == "one-sided") {
+          p_values <- p_values + (t_sim >= t_obs)
+      } else {
+          # Here, use mean_t_sim which is the mean across all iterations
+          p_values <- p_values + (abs(t_sim - mean_t_sim) >= abs(t_obs - mean_t_sim))
+      }
+  }
+
   p_values <- p_values / L
   
   # Holm-Bonferroni correction
@@ -253,16 +282,14 @@ iartest <- function(Z, X, Y, G = 'mice', S = NULL, L = 10000,
 }
 
 
-
-
-# Defining the data
+# test data
 Z <- c(1, 1, 1, 1, 0, 0, 0, 0)
 X <- matrix(c(5.1, 4.9, 4.7, 4.5, 7.2, 8.6, 6.0, 8.4,
               3.5, NA, 3.2, NA, 2.3, 3.1, 3.6, 3.9), ncol = 2, byrow = TRUE)
 Y <- matrix(c(4.4, 4.3, 4.1, 5.0, 1.7, NA, 1.4, 1.7,
               0.5, 0.7, NA, 0.4, 0.1, 0.2, NA, 0.4), ncol = 2, byrow = TRUE)
 
-# Running the iartest function
-# Ensure that iartest and all its dependent functions are defined in your R environment
-result <- iartest(Z = Z, X = X, Y = Y, L = 1000, verbose = TRUE)
+# test time used for imputation
+result <- iartest(Z = Z, X = X, Y = Y, L = 100, verbose = TRUE)
 print(result)
+
