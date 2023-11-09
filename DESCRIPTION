@@ -1,0 +1,15 @@
+Package: I-ART
+Type: Package
+Title: Imputation-Assisted Randomization Tests
+Version: 1.0.0
+Authors@R: c(
+    person("Siyu", "Heng", email = "siyuheng@nyu.edu", role = c("aut", "cre")),
+    person("Jiawei", "Zhang", email = "jz4721@nyu.edu", role = c("aut", "cre")),
+    person("Yang", "Feng", email = "yang.feng@nyu.edu", role = c("aut", "cre"))
+    )
+Description: I-ART (Imputation-Assisted Randomization Tests) is an R package designed for conducting finite-population-exact randomization tests in design-based causal studies with missing outcomes. It provides a robust solution for handling missing data in causal inference, leveraging the potential outcomes framework and integrating various outcome imputation algorithms.
+Depends: R (>= 3.5.0)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+URL: [https://github.com/Imputation-Assisted-Randomization-Tests/R-I-ART]

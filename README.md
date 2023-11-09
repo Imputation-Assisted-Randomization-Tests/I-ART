@@ -34,6 +34,8 @@ result <- iartest(Z, X, Y, L = 1000, verbose = TRUE)
 print(result)
 ```
 
+Detailed usage can be found here [ReadDoc](https://i-art.readthedocs.io/en/latest/)
+
 ## Features
 
 - Conducts finite-population-exact randomization tests.
