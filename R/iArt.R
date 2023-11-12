@@ -200,7 +200,7 @@ choosemodel <- function(G) {
   }
 }
 
-test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000, 
+iArt.test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000, 
                     verbose = FALSE, covariate_adjustment = FALSE, alpha = 0.05, 
                     alternative = "one-sided", random_state = NULL) {
   
