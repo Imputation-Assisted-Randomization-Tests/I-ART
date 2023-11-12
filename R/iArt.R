@@ -37,7 +37,8 @@ getY <- function(G, Z, X, Y, covariate_adjustment = FALSE) {
   lenY <- ncol(Y)
   indexY <- ncol(Z) + ncol(X) + 1 # Assuming Z and X are not NULL
   Y_head <- imputed_data[, indexY:(indexY + lenY - 1)]
-  X <- imputed_data[, (ncol(Z) + 1):(ncol(Z) + ncol(X))]
+  Y_head <- data.frame(Y_head)
+  X <- data.frame(imputed_data[, (ncol(Z) + 1):(ncol(Z) + ncol(X))])
   
   if (covariate_adjustment) {
     # Perform linear regression
@@ -53,8 +54,9 @@ getY <- function(G, Z, X, Y, covariate_adjustment = FALSE) {
     # Calculate residuals (Y_head - Y)
     Y_head_adj <- predict(model,newdata = X)
     Y_head  = Y_head - Y_head_adj
-
   }
+  
+  Y_head <- data.frame(Y_head)
   return(Y_head)
 }
 
@@ -229,6 +231,7 @@ iArt.test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000,
   # Impute the missing values to get observed test statistics
   Y_pred <- getY(G_model, Z, X, Y, covariate_adjustment)
   t_obs <- getT(Y_pred, Z, ncol(Y), M)
+  if (verbose) print(paste("Observed test statistics =", paste(t_obs, collapse = ", ")))
 
   # Initialize variable for simulations
   p_values <- numeric(ncol(Y))
@@ -263,7 +266,7 @@ iArt.test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000,
 
   # Update p-values
   for (i in 1:nrow(t_sim_matrix)) {
-      t_sim <- t_sim_matrix[i, ]
+      t_sim <- t_sim_matrix[i,]
       if (alternative == "one-sided") {
           p_values <- p_values + (t_sim >= t_obs)
       } else {
@@ -280,5 +283,4 @@ iArt.test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000,
   
   return(list(reject = any_rejected, p_values = corrected_p_values))
 }
-
 
