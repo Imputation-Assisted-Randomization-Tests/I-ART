@@ -1,11 +1,11 @@
-\name{iartest}
-\alias{iartest}
+\name{iArt}
+\alias{iArt}
 \title{Imputation-Assisted Randomization Tests}
 \description{
   Performs Imputation-Assisted Randomization Tests.
 }
 \usage{
-iartest(Z, X, Y, G = 'mice', S = NULL, L = 10000, verbose = FALSE, 
+iArt.test(Z, X, Y, G = 'missforest', S = NULL, L = 10000, verbose = FALSE, 
         covariate_adjustment = FALSE, alpha = 0.05, alternative = "one-sided", random_state = NULL)
 }
 \arguments{
@@ -35,7 +35,7 @@ X <- matrix(c(5.1, 4.9, 4.7, 4.5, 7.2, 8.6, 6.0, 8.4,
 Y <- matrix(c(4.4, 4.3, 4.1, 5.0, 1.7, NA, 1.4, 1.7,
               0.5, 0.7, NA, 0.4, 0.1, 0.2, NA, 0.4), ncol = 2, byrow = TRUE)
 
-result <- iartest(Z = Z, X = X, Y = Y, L = 1000, verbose = TRUE)
+result <- iArt.test(Z = Z, X = X, Y = Y, L = 1000, verbose = TRUE)
 print(result)
 }
 \seealso{

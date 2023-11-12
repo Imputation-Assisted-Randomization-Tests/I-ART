@@ -1,4 +1,4 @@
-# IART: Imputation-Assisted Randomization Tests
+# iArt: Imputation-Assisted Randomization Tests
 
 ## Authors
 
@@ -10,27 +10,28 @@ Siyu Heng (Email: siyuheng@nyu.edu), Jiawei Zhang (Email: jz4721@nyu.edu), and Y
 
 ## Description
 
-IART (Imputation-Assisted Randomization Tests) is a R package designed for conducting finite-population-exact randomization tests in design-based causal studies with missing outcomes. It offers a robust solution to handle missing data in causal inference, leveraging the potential outcomes framework and integrating various outcome imputation algorithms.
+iArt (Imputation-Assisted Randomization Tests) is a R package designed for conducting finite-population-exact randomization tests in design-based causal studies with missing outcomes. It offers a robust solution to handle missing data in causal inference, leveraging the potential outcomes framework and integrating various outcome imputation algorithms.
 
 ## Installation
 
-To install IART, run the following command:
+To install iArt, run the following command:
 
 ```bash
-devtools::install_github("Imputation-Assisted-Randomization-Tests/IART")
+devtools::install_github("Imputation-Assisted-Randomization-Tests/iArt")
 ```
 
 ## Usage
 
-Here is a basic example of how to use IART:
+Here is a basic example of how to use iArt:
 
 ```R
-devtools::install_github("Imputation-Assisted-Randomization-Tests/IART")
-library(IART)
+devtools::install_github("Imputation-Assisted-Randomization-Tests/iArt")
+library(iArt)
 Z <- c(1, 1, 1, 1, 0, 0, 0, 0)
 X <- matrix(c(5.1, 3.5, 4.9, NA, 4.7, 3.2, 4.5, NA, 7.2, 2.3, 8.6, 3.1, 6.0, 3.6, 8.4, 3.9), ncol = 2)
 Y <- matrix(c(4.4, 0.5, 4.3, 0.7, 4.1, NA, 5.0, 0.4, 1.7, 0.1, NA, 0.2, 1.4, NA, 1.7, 0.4), ncol = 2)
-print(iartest(Z, X, Y, L = 1000, verbose = TRUE))
+result <- iArt.test(Z = Z, X = X, Y = Y, L = 1000, verbose = TRUE)
+print(result)
 ```
 
 Detailed usage can be found here [ReadDoc](https://i-art.readthedocs.io/en/latest/)
@@ -45,14 +46,14 @@ Detailed usage can be found here [ReadDoc](https://i-art.readthedocs.io/en/lates
 
 ## Contributing
 
-Your contributions to IART are highly appreciated! If you're looking to contribute, we encourage you to open issues for any bugs or feature suggestions, or submit pull requests with your proposed changes. 
+Your contributions to iArt are highly appreciated! If you're looking to contribute, we encourage you to open issues for any bugs or feature suggestions, or submit pull requests with your proposed changes. 
 
 
 ## License
 This project is licensed under the MIT License
 
 ## Citation
-If you use IART in your research, please consider citing it:
+If you use iArt in your research, please consider citing it:
 
 ```code
 @misc{heng2023designbased,
