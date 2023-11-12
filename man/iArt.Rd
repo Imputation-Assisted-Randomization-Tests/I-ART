@@ -6,7 +6,7 @@
 }
 \usage{
 iArt.test(Z, X, Y, G = 'missforest', S = NULL, L = 10000, verbose = FALSE, 
-        covariate_adjustment = FALSE, alpha = 0.05, alternative = "one-sided", random_state = NULL)
+        covariate_adjustment = FALSE, alpha = 0.05, alternative = "greater", random_state = NULL)
 }
 \arguments{
   \item{Z}{Numeric vector of observed treatment indicators.}
@@ -18,7 +18,7 @@ iArt.test(Z, X, Y, G = 'missforest', S = NULL, L = 10000, verbose = FALSE,
   \item{verbose}{Logical flag for verbose output. Default is FALSE.}
   \item{covariate_adjustment}{Logical flag for performing covariate adjustment. Default is FALSE.}
   \item{alpha}{Significance level for the statistical test. Default is 0.05.}
-  \item{alternative}{Specifies the alternative hypothesis. Choices are "one-sided" or "two-sided". Default is "one-sided".}
+  \item{alternative}{Specifies the alternative hypothesis. Choices are "greater", "less", or "two-sided". Default is "greater".
   \item{random_state}{An integer for setting the random seed. Default is NULL.}
 }
 \value{

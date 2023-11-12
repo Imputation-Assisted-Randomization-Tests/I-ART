@@ -177,8 +177,8 @@ check_param <- function(Z, X, Y, S, G, L, verbose, covariate_adjustment, alpha, 
   # Check covariate_adjustment: must be TRUE or FALSE
   if (!is.logical(covariate_adjustment)) stop("covariate_adjustment must be TRUE or FALSE")
   
-  # Check alternative: must be "one-sided" or "two-sided"
-  if (!alternative %in% c("one-sided", "two-sided")) stop("alternative must be 'one-sided' or 'two-sided'")
+  # Check alternative: must be "greater","less" or "two-sided"
+  if (!alternative %in% c("greater", "less", "two-sided")) stop("alternative must be 'greater', 'less' or 'two-sided'")
   
   # Check random_state: if provided, must be a positive integer or NULL
   if (!is.null(random_state) && (!is.numeric(random_state) || random_state <= 0 || random_state != as.integer(random_state))) {
@@ -204,7 +204,7 @@ choosemodel <- function(G) {
 
 iArt.test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000, 
                     verbose = FALSE, covariate_adjustment = FALSE, alpha = 0.05, 
-                    alternative = "one-sided", random_state = NULL) {
+                    alternative = "greater", random_state = NULL) {
   
   # Parameter checks
   check_param(Z, X, Y, S, G, L, verbose, covariate_adjustment, alpha, alternative, random_state)
@@ -267,8 +267,10 @@ iArt.test <- function(Z, X, Y, G = 'missforest', S = NULL, L = 10000,
   # Update p-values
   for (i in 1:nrow(t_sim_matrix)) {
       t_sim <- t_sim_matrix[i,]
-      if (alternative == "one-sided") {
+      if (alternative == "greater") {
           p_values <- p_values + (t_sim >= t_obs)
+      } else if (alternative == "less") {
+          p_values <- p_values + (t_sim <= t_obs)
       } else {
           # Here, use mean_t_sim which is the mean across all iterations
           p_values <- p_values + (abs(t_sim - mean_t_sim) >= abs(t_obs - mean_t_sim))
