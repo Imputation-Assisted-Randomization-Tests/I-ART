@@ -25,7 +25,6 @@ devtools::install_github("Imputation-Assisted-Randomization-Tests/iArt")
 Here is a basic example of how to use iArt:
 
 ```R
-devtools::install_github("Imputation-Assisted-Randomization-Tests/iArt")
 library(iArt)
 Z <- c(1, 1, 1, 1, 0, 0, 0, 0)
 X <- matrix(c(5.1, 3.5, 4.9, NA, 4.7, 3.2, 4.5, NA, 7.2, 2.3, 8.6, 3.1, 6.0, 3.6, 8.4, 3.9), ncol = 2)
